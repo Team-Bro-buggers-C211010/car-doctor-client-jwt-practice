@@ -1,10 +1,12 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import img from '../../assets/images/login/login.svg'
 import { useContext } from 'react';
 import { AuthContext } from '../../providers/AuthProvider';
+import axios from 'axios';
 
 const Login = () => {
-
+    const navigate = useNavigate();
+    const location = useLocation();
     const { signIn } = useContext(AuthContext);
 
     const handleLogin = event => {
@@ -12,11 +14,22 @@ const Login = () => {
         const form = event.target;
         const email = form.email.value;
         const password = form.password.value;
-        console.log(name, email, password)
+
         signIn(email, password)
             .then(result => {
-                const user = result.user;
-                console.log(user);
+                const LoggedInUser = result.user;
+                console.log(LoggedInUser);
+                const user = {email}
+                // get access token
+                axios.post('http://localhost:5000/jwt', user, {withCredentials: true}) // This withCredentials is important to set cookie in network
+                .then(res => {
+                    console.log(res.data);
+                    if(res.data.success) {
+                        navigate(location?.state? location?.state : '/')
+                    }
+                })
+
+
             })
             .catch(error => console.log(error));
     }
